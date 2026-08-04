@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Actividad interactiva</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="viewer-page">
+  <div id="viewer-message" class="viewer-message">
+    <div class="glass">
+      <h1>Cargando actividad…</h1>
+      <p class="muted">Espera unos segundos.</p>
+    </div>
+  </div>
+
+  <div id="viewer-stage" class="viewer-stage hidden">
+    <div class="viewer-toolbar">
+      <button id="fullscreen-btn" class="btn small ghost">⛶ Pantalla completa</button>
+    </div>
+    <iframe id="activity-frame" title="Actividad educativa" allow="fullscreen; autoplay; clipboard-write" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-pointer-lock allow-downloads"></iframe>
+  </div>
+  <script type="module" src="js/viewer.js"></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PowerView Web — Panel del profesor</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <h1>PowerView <span>Web</span></h1>
+        <p id="connection-status">Panel privado del Prof. Rodrigo</p>
+      </div>
+      <div class="auth-box">
+        <div id="auth-user" class="auth-user">No has iniciado sesión.</div>
+        <button id="login-btn" class="btn primary">Entrar con Google</button>
+        <button id="logout-btn" class="btn ghost hidden">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <section id="config-warning" class="status warn hidden"></section>
+
+    <div class="grid-admin">
+      <section class="glass editor-card">
+        <div class="form-grid">
+          <div class="field">
+            <label for="title">Título de la actividad</label>
+            <input id="title" class="input" placeholder="Las preposiciones">
+          </div>
+          <div class="field">
+            <label for="course">Curso</label>
+            <input id="course" class="input" placeholder="Sexto de primaria">
+          </div>
+          <div class="field">
+            <label for="subject">Materia</label>
+            <input id="subject" class="input" value="Lenguaje">
+          </div>
+        </div>
+
+        <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr;">
+          <div class="field">
+            <label for="slug">Identificador del enlace</label>
+            <input id="slug" class="input" placeholder="preposiciones-sexto">
+          </div>
+          <div class="field">
+            <label for="description">Descripción breve</label>
+            <input id="description" class="input" placeholder="Actividad gamificada">
+          </div>
+          <label class="checkbox-row">
+            <input id="published" type="checkbox" checked>
+            Publicada
+          </label>
+        </div>
+
+        <label for="game-code" class="muted" style="font-size:.82rem;font-weight:800;margin-bottom:7px;">Código HTML completo de la etapa 3</label>
+        <textarea id="game-code" class="code-area" spellcheck="false" placeholder="Pega aquí desde <!DOCTYPE html> hasta </html>"></textarea>
+        <div class="meta-line">
+          <span id="size-label">0 B</span>
+          <span id="current-id">Actividad nueva</span>
+        </div>
+
+        <div class="actions">
+          <button id="validate-btn" class="btn ghost">Validar</button>
+          <button id="preview-btn" class="btn ghost">Vista previa</button>
+          <button id="save-btn" class="btn primary" disabled>Guardar y publicar</button>
+          <button id="new-btn" class="btn ghost">Nueva</button>
+          <button id="copy-link-btn" class="btn success" disabled>Copiar enlace</button>
+          <button id="copy-blogger-btn" class="btn success" disabled>Copiar código Blogger</button>
+        </div>
+
+        <div id="validation-report" class="status warn" style="margin-top:12px;">Pega un código y pulsa “Validar”.</div>
+      </section>
+
+      <aside class="glass side-card">
+        <div class="side-head">
+          <h2>Mis actividades</h2>
+          <button id="refresh-btn" class="btn small ghost">Actualizar</button>
+        </div>
+        <div id="activity-list" class="activity-list">
+          <div class="status warn">Inicia sesión para cargar la biblioteca.</div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="preview-modal" class="modal" aria-hidden="true">
+    <div class="modal-panel">
+      <div class="modal-tools">
+        <button id="preview-fullscreen" class="btn small ghost">Pantalla completa</button>
+        <button id="close-preview" class="btn small danger">Cerrar</button>
+      </div>
+      <iframe id="preview-frame" title="Vista previa" allow="fullscreen; autoplay" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-pointer-lock allow-downloads"></iframe>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

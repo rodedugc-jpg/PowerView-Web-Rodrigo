@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Actividades interactivas del Prof. Rodrigo</title>
+  <meta name="description" content="Biblioteca de actividades interactivas educativas.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="glass library-head">
+      <h1>Actividades interactivas del Prof. Rodrigo</h1>
+      <p>Selecciona una actividad para aprender y practicar desde celular, tablet o computadora.</p>
+      <div class="filters">
+        <input id="search" class="input" placeholder="Buscar por título o tema">
+        <select id="course-filter" class="select"><option value="">Todos los cursos</option></select>
+        <select id="subject-filter" class="select"><option value="">Todas las materias</option></select>
+      </div>
+    </section>
+
+    <section id="library-status" class="status warn">Cargando actividades…</section>
+    <section id="library-grid" class="library-grid" style="margin-top:14px;"></section>
+  </main>
+  <script type="module" src="js/library.js"></script>
+</body>
+</html>
