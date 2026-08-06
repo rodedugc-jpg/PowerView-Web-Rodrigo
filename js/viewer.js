@@ -3,7 +3,6 @@ import { db, isFirebaseConfigured, doc, getDoc } from "./firebase-client.js";
 const message = document.getElementById("viewer-message");
 const stage = document.getElementById("viewer-stage");
 const frame = document.getElementById("activity-frame");
-const fullscreen = document.getElementById("fullscreen-btn");
 
 function showMessage(title, body) {
   message.classList.remove("hidden");
@@ -39,11 +38,5 @@ async function loadActivity() {
   }
 }
 
-fullscreen.addEventListener("click", async () => {
-  try {
-    if (!document.fullscreenElement) await stage.requestFullscreen();
-    else await document.exitFullscreen();
-  } catch (_) {}
-});
 
 loadActivity();

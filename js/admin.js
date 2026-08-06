@@ -38,14 +38,13 @@ const ui = {
   save: $("save-btn"),
   fresh: $("new-btn"),
   copyLink: $("copy-link-btn"),
-  copyBlogger: $("copy-blogger-btn"),
+  copyEmbed: $("copy-embed-btn"),
   refresh: $("refresh-btn"),
   report: $("validation-report"),
   list: $("activity-list"),
   modal: $("preview-modal"),
   frame: $("preview-frame"),
   closePreview: $("close-preview"),
-  previewFullscreen: $("preview-fullscreen")
 };
 
 let currentUser = null;
@@ -71,7 +70,7 @@ function refreshPermissions() {
   const allowed = Boolean(isFirebaseConfigured() && isAdmin(currentUser) && lastValidation?.valid);
   ui.save.disabled = !allowed;
   ui.copyLink.disabled = !currentDocId;
-  ui.copyBlogger.disabled = !currentDocId;
+  ui.copyEmbed.disabled = !currentDocId;
 }
 
 function updateSize() {
@@ -118,7 +117,7 @@ function clearForm() {
   ui.code.value = "";
   ui.currentId.textContent = "Actividad nueva";
   ui.copyLink.disabled = true;
-  ui.copyBlogger.disabled = true;
+  ui.copyEmbed.disabled = true;
   updateSize();
   setReport("warn", "Pega un código y pulsa “Validar”.");
   ui.title.focus();
@@ -130,17 +129,19 @@ function activityUrl(id) {
   return url.href;
 }
 
-function bloggerEmbedCode(id, title) {
+function embedCode(id, title) {
   const src = activityUrl(id);
   const safeTitle = (title || "Actividad educativa interactiva").replace(/"/g, "&quot;");
-  return `<iframe
-  src="${src}"
-  title="${safeTitle}"
-  style="display:block;width:100%;height:clamp(520px,78vh,820px);border:0;border-radius:16px;background:#000;"
-  loading="lazy"
-  allow="fullscreen; autoplay"
-  allowfullscreen>
-</iframe>`;
+  return `<div style="width:100%;max-width:1200px;margin:0 auto;">
+  <iframe
+    src="${src}"
+    title="${safeTitle}"
+    style="display:block;width:100%;height:clamp(520px,78vh,820px);border:0;border-radius:16px;background:#000;"
+    loading="lazy"
+    allow="fullscreen; autoplay; clipboard-write"
+    allowfullscreen>
+  </iframe>
+</div>`;
 }
 
 async function copyText(text, successMessage) {
@@ -200,12 +201,14 @@ function renderActivityCard(item) {
       <button class="btn small ghost" data-action="edit">Editar</button>
       <button class="btn small ghost" data-action="open">Abrir</button>
       <button class="btn small success" data-action="link">Copiar enlace</button>
+      <button class="btn small success" data-action="embed">Copiar inserción</button>
       <button class="btn small danger" data-action="delete">Eliminar</button>
     </div>`;
 
   card.querySelector('[data-action="edit"]').addEventListener("click", () => loadIntoForm(item));
   card.querySelector('[data-action="open"]').addEventListener("click", () => window.open(activityUrl(item.id), "_blank", "noopener"));
   card.querySelector('[data-action="link"]').addEventListener("click", () => copyText(activityUrl(item.id), "Enlace público copiado."));
+  card.querySelector('[data-action="embed"]').addEventListener("click", () => copyText(embedCode(item.id, item.title), "Código de inserción universal copiado."));
   card.querySelector('[data-action="delete"]').addEventListener("click", () => removeActivity(item.id, item.title));
   return card;
 }
@@ -316,10 +319,9 @@ ui.save.addEventListener("click", saveActivity);
 ui.fresh.addEventListener("click", clearForm);
 ui.refresh.addEventListener("click", loadActivities);
 ui.copyLink.addEventListener("click", () => currentDocId && copyText(activityUrl(currentDocId), "Enlace público copiado."));
-ui.copyBlogger.addEventListener("click", () => currentDocId && copyText(bloggerEmbedCode(currentDocId, ui.title.value), "Código corto para Blogger copiado."));
+ui.copyEmbed.addEventListener("click", () => currentDocId && copyText(embedCode(currentDocId, ui.title.value), "Código de inserción universal copiado."));
 ui.closePreview.addEventListener("click", closePreview);
 ui.modal.addEventListener("click", (event) => { if (event.target === ui.modal) closePreview(); });
-ui.previewFullscreen.addEventListener("click", () => ui.frame.requestFullscreen?.());
 
 if (!isFirebaseConfigured()) {
   ui.configWarning.classList.remove("hidden");

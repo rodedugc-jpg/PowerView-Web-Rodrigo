@@ -130,7 +130,6 @@ a { color: inherit; }
 .viewer-page { width: 100vw; height: 100vh; overflow: hidden; background: #000; }
 .viewer-stage { position: fixed; inset: 0; }
 .viewer-stage iframe { width: 100%; height: 100%; border: 0; background: #000; }
-.viewer-toolbar { position: fixed; top: 10px; right: 10px; z-index: 50; display: flex; gap: 7px; }
 .viewer-message { position: fixed; inset: 0; display: grid; place-items: center; padding: 20px; background: #07070a; }
 .viewer-message .glass { max-width: 650px; padding: 25px; text-align: center; }
 .viewer-message h1 { margin-top: 0; }
