@@ -10,8 +10,6 @@ const OMIT_MARKERS = [
   "inserta aquí el código original"
 ];
 
-const MAX_SAFE_BYTES = 900_000;
-
 export function byteLength(value) {
   return new TextEncoder().encode(value).length;
 }
@@ -36,218 +34,55 @@ export function validateActivityHtml(html) {
   const lower = text.toLowerCase();
   const bytes = byteLength(text);
 
-  if (!text.trim()) {
-    errors.push("No se proporcionó ningún código HTML.");
-  }
+  if (!text.trim()) errors.push("No se proporcionó ningún código HTML.");
 
   if (!/^\s*<!doctype html>/i.test(text)) {
-    errors.push("El documento debe comenzar con <!DOCTYPE html>.");
+    warnings.push("No comienza con <!DOCTYPE html>. PowerView permite publicarlo, pero conviene conservar un documento HTML completo.");
   }
 
   for (const tag of ["html", "head", "body"]) {
-    if (!new RegExp(`<${tag}\\b`, "i").test(text)) {
-      errors.push(`Falta la etiqueta <${tag}>.`);
-    }
-
-    if (!new RegExp(`</${tag}>`, "i").test(text)) {
-      errors.push(`Falta la etiqueta </${tag}>.`);
-    }
-  }
-
-  if (!/<script\b/i.test(text) || !/<\/script>/i.test(text)) {
-    warnings.push(
-      "No se encontró un bloque <script> completo. Puede ser válido si la actividad no usa JavaScript."
-    );
-  }
-
-  if (/\\`/.test(text)) {
-    errors.push(
-      "Se encontró \\` y eso indica acentos graves dañados."
-    );
-  }
-
-  if (/\\\$\{/.test(text)) {
-    errors.push(
-      "Se encontró \\${ y eso indica interpolaciones JavaScript dañadas."
-    );
+    if (!new RegExp(`<${tag}\\b`, "i").test(text)) warnings.push(`No se encontró <${tag}>.`);
+    if (!new RegExp(`</${tag}>`, "i").test(text)) warnings.push(`No se encontró </${tag}>.`);
   }
 
   for (const marker of OMIT_MARKERS) {
     if (lower.includes(marker.toLowerCase())) {
-      errors.push(`Marcador de omisión prohibido: “${marker}”.`);
+      errors.push(`Marcador de omisión detectado: “${marker}”. Parece que el HTML está incompleto.`);
     }
   }
 
-  if (/<iframe\b/i.test(text) || /\bsrcdoc\s*=/i.test(text)) {
-    warnings.push(
-      "El código ya contiene un iframe o srcdoc. Este visor está pensado para recibir el HTML normal de la etapa 3."
-    );
-  }
+  if (/\\`/.test(text)) warnings.push("Se encontró \\` en el código. Revisa que no haya acentos graves escapados por accidente.");
+  if (/\\\$\{/.test(text)) warnings.push("Se encontró \\${ en el código. Revisa que no haya interpolaciones JavaScript dañadas.");
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(text, "text/html");
-
   const ids = new Map();
-
   doc.querySelectorAll("[id]").forEach((element) => {
-    const id = element.id;
-    ids.set(id, (ids.get(id) || 0) + 1);
+    ids.set(element.id, (ids.get(element.id) || 0) + 1);
+  });
+  [...ids.entries()].filter(([, count]) => count > 1).forEach(([id, count]) => {
+    warnings.push(`ID duplicado: #${id} aparece ${count} veces.`);
   });
 
-  const duplicates = [...ids.entries()].filter(
-    ([, count]) => count > 1
-  );
-
-  duplicates.forEach(([id, count]) => {
-    errors.push(`ID duplicado: #${id} aparece ${count} veces.`);
-  });
-
-  const inlineHandlers = [...doc.querySelectorAll("[onclick]")]
-    .map((element) => element.getAttribute("onclick") || "")
-    .filter(Boolean);
-
-  const functionCalls = new Set();
-
-  inlineHandlers.forEach((handler) => {
-    const matches = handler.matchAll(
-      /(?:^|[^\w$.])([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\s*\(/g
-    );
-
-    for (const match of matches) {
-      functionCalls.add(match[1]);
-    }
-  });
-
-  const scriptText = [...doc.scripts]
-    .filter((script) => !script.src)
-    .map((script) => script.textContent || "")
-    .join("\n");
-
-  for (const call of functionCalls) {
-    const last = call.split(".").pop();
-
-    const patterns = [
-      new RegExp(
-        `function\\s+${escapeRegex(last)}\\s*\\(`
-      ),
-      new RegExp(
-        `${escapeRegex(last)}\\s*\\([^)]*\\)\\s*\\{`
-      ),
-      new RegExp(
-        `(?:const|let|var)\\s+${escapeRegex(
-          last
-        )}\\s*=\\s*(?:async\\s*)?(?:function|\\([^)]*\\)\\s*=>)`
-      )
-    ];
-
-    if (!patterns.some((pattern) => pattern.test(scriptText))) {
-      warnings.push(
-        `No se pudo confirmar automáticamente la función usada en onclick: ${call}().`
-      );
-    }
-  }
-
-  const containsModuleScript =
-    /<script[^>]*type=["']module["']/i.test(text);
-
-  if (scriptText && !containsModuleScript) {
-    try {
-      // Comprueba la sintaxis sin ejecutar el código.
-      new Function(scriptText);
-
-      info.push(
-        "La sintaxis del JavaScript integrado supera la comprobación básica."
-      );
-    } catch (error) {
-      errors.push(
-        `Error de sintaxis JavaScript: ${error.message}`
-      );
-    }
-  } else if (containsModuleScript) {
-    warnings.push(
-      "La actividad contiene scripts de tipo module; la validación de sintaxis completa no se ejecutó."
-    );
-  }
-
-  const qIds = [
-    ...text.matchAll(
-      /\bqId\s*:\s*(["']?)([^,"'\s}\]]+)\1/g
-    )
-  ].map((match) => match[2]);
-
-  const qIdCounts = new Map();
-
-  qIds.forEach((id) => {
-    qIdCounts.set(id, (qIdCounts.get(id) || 0) + 1);
-  });
-
-  [...qIdCounts.entries()]
-    .filter(([, count]) => count > 1)
-    .forEach(([id, count]) => {
-      errors.push(
-        `qId duplicado: ${id} aparece ${count} veces.`
-      );
-    });
-
-  /*
-   * La firma es una comprobación visual.
-   * Nunca debe impedir guardar o publicar una actividad funcional.
-   */
-  const signatureCount =
-    (
-      text.match(
-        /Actividad elaborada por el Prof\. Rodrigo/g
-      ) || []
-    ).length;
-
+  const signatureCount = (text.match(/Actividad elaborada por el Prof\. Rodrigo/g) || []).length;
   if (signatureCount === 0) {
-    warnings.push(
-      "No se encontró la firma «Actividad elaborada por el Prof. Rodrigo». La actividad puede publicarse."
-    );
+    warnings.push("No se encontró la firma «Actividad elaborada por el Prof. Rodrigo». Esto NO impide publicar.");
+  } else if (signatureCount > 1) {
+    warnings.push(`La firma aparece ${signatureCount} veces. Esto NO impide publicar.`);
   }
 
-  if (signatureCount > 1) {
-    warnings.push(
-      `La firma aparece ${signatureCount} veces. La actividad puede publicarse, aunque se recomienda dejarla una sola vez.`
-    );
+  // En v4 el tamaño ya no se bloquea por Firestore. El HTML se divide en bloques
+  // y se guarda en Realtime Database, mientras Firestore conserva solo metadatos.
+  if (bytes >= 1_000_000) {
+    info.push(`Archivo grande detectado: ${formatBytes(bytes)}. PowerView v4 lo guardará por bloques en Realtime Database.`);
   }
-
-  if (signatureCount === 1) {
-    const menuStart = text.search(
-      /id=["']screen-menu["']/i
-    );
-
-    const signatureAt = text.indexOf(
-      "Actividad elaborada por el Prof. Rodrigo"
-    );
-
-    if (menuStart === -1 || signatureAt < menuStart) {
-      warnings.push(
-        "No se pudo confirmar que la firma esté dentro de screen-menu. La actividad puede publicarse."
-      );
-    }
-  }
-
-  if (bytes > MAX_SAFE_BYTES) {
-    errors.push(
-      `El HTML pesa ${formatBytes(
-        bytes
-      )}. Esta versión usa Firestore y admite hasta 900 KB por seguridad.`
-    );
-  } else if (bytes > 700_000) {
-    warnings.push(
-      `El HTML pesa ${formatBytes(
-        bytes
-      )} y está cerca del límite recomendado de Firestore.`
-    );
+  if (bytes >= 50_000_000) {
+    warnings.push("El archivo supera 50 MB. Puede funcionar, pero tardará más en subir y consumir más transferencia al abrirse.");
   }
 
   info.push(`Tamaño del código: ${formatBytes(bytes)}.`);
   info.push(`IDs encontrados: ${ids.size}.`);
-
-  if (qIds.length) {
-    info.push(`Reactivos qId detectados: ${qIds.length}.`);
-  }
+  info.push("El tamaño del HTML ya no está limitado a 900 KB por Firestore.");
 
   return {
     valid: errors.length === 0,
@@ -259,20 +94,18 @@ export function validateActivityHtml(html) {
 }
 
 function escapeRegex(value) {
-  return value.replace(
-    /[.*+?^${}()|[\]\\]/g,
-    "\\$&"
-  );
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export function formatBytes(bytes) {
-  if (bytes < 1024) {
-    return `${bytes} B`;
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let i = 0;
+  while (value >= 1024 && i < units.length - 1) {
+    value /= 1024;
+    i += 1;
   }
-
-  if (bytes < 1024 * 1024) {
-    return `${(bytes / 1024).toFixed(1)} KB`;
-  }
-
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  const decimals = i === 0 ? 0 : value >= 100 ? 0 : value >= 10 ? 1 : 2;
+  return `${value.toFixed(decimals)} ${units[i]}`;
 }

@@ -1,0 +1,85 @@
+POWERVIEW WEB V4 — HTML GRANDES + CARPETAS — SIN BLAZE
+========================================================
+
+OBJETIVO
+-------
+Esta versión elimina el antiguo límite práctico de ~900 KB causado por guardar el HTML completo dentro de un documento de Cloud Firestore.
+
+ARQUITECTURA V4
+---------------
+1) FIRESTORE
+   Guarda solo metadatos pequeños:
+   - título
+   - curso
+   - materia
+   - descripción
+   - carpeta
+   - orden
+   - publicado/borrador
+   - tamaño
+   - número de bloques
+
+2) FIREBASE REALTIME DATABASE (PLAN SPARK / GRATUITO)
+   Guarda el HTML real dividido automáticamente en bloques de aproximadamente 700 KB.
+   Esto permite manejar HTML de 5 MB, 15 MB y superiores sin meter todo en un documento de Firestore.
+
+3) VISOR
+   Reconstruye los bloques y ejecuta el HTML como documento real mediante document.write(), sin srcdoc ni sandbox intermedio.
+
+COMPATIBILIDAD
+--------------
+- Las actividades antiguas que todavía tengan el campo "html" dentro de Firestore siguen funcionando.
+- Al editar y volver a guardar una actividad antigua, PowerView la migra automáticamente al nuevo almacenamiento por bloques.
+
+FUNCIONES INCLUIDAS
+-------------------
+- Importar archivo .html desde el equipo.
+- Validar sin bloquear por 900 KB.
+- Vista previa.
+- Ejecutar HTML en pestaña independiente.
+- Guardar/publicar.
+- Copiar enlace.
+- Copiar código de inserción.
+- Carpetas.
+- Crear, renombrar y eliminar carpetas.
+- Menú de tres puntos por actividad.
+- Mover actividad.
+- Crear carpeta y mover.
+- Duplicar.
+- Eliminar.
+- Buscar.
+- Arrastrar y soltar para ordenar dentro de una carpeta.
+
+CONFIGURACIÓN QUE FALTA HACER UNA SOLA VEZ
+------------------------------------------
+A) En Firebase Console, dentro del mismo proyecto PowerView Web Rodrigo:
+   1. Ir a: Bases de datos y almacenamiento > Realtime Database.
+   2. Pulsar "Crear base de datos".
+   3. Elegir us-central1 (Iowa) para este proyecto, salvo que Firebase muestre otra decisión ya tomada.
+   4. Crear la base.
+
+B) En la pestaña REGLAS de Realtime Database:
+   Copiar el contenido de database.rules.json y publicarlo.
+
+C) Esta versión ya viene configurada para la URL predeterminada de us-central1:
+   https://powerview-web-rodrigo-default-rtdb.firebaseio.com
+
+   Si Firebase te muestra exactamente esa URL, NO necesitas editar ningún archivo.
+   Si por alguna razón la URL que Firebase muestra es diferente, reemplaza REALTIME_DATABASE_URL en js/firebase-config.js.
+
+D) Subir esta versión del proyecto a GitHub Pages sustituyendo los archivos anteriores.
+
+SEGURIDAD
+---------
+Las reglas incluidas permiten:
+- lectura pública únicamente de actividades marcadas como publicadas y listas;
+- lectura/escritura administrativa para el correo configurado como ADMIN_EMAIL.
+
+IMPORTANTE
+----------
+No hace falta activar Blaze ni Cloud Storage para esta versión.
+Realtime Database dispone de cuota gratuita en Spark. Consulta los límites de tu plan en Firebase antes de escalar a muchos cientos de descargas mensuales.
+
+ARCHIVO DE REGLAS
+-----------------
+database.rules.json

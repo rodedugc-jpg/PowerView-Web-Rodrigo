@@ -15,7 +15,7 @@
     <header class="topbar">
       <div class="brand">
         <h1>PowerView <span>Web</span></h1>
-        <p id="connection-status">Panel privado del Prof. Rodrigo</p>
+        <p id="connection-status">Panel privado del Prof. Rodrigo · PowerView v4</p>
       </div>
       <div class="auth-box">
         <div id="auth-user" class="auth-user">No has iniciado sesión.</div>
@@ -58,8 +58,17 @@
           </label>
         </div>
 
-        <label for="game-code" class="muted" style="font-size:.82rem;font-weight:800;margin-bottom:7px;">Código HTML completo de la etapa 3</label>
-        <textarea id="game-code" class="code-area" spellcheck="false" placeholder="Pega aquí desde <!DOCTYPE html> hasta </html>"></textarea>
+        <div class="import-strip">
+          <div>
+            <strong>Importar HTML</strong>
+            <span>Abre un .html completo. Los archivos grandes se guardan por bloques, sin el límite de 900 KB.</span>
+          </div>
+          <button id="import-html-btn" class="btn ghost" type="button">📂 Importar archivo HTML</button>
+          <input id="html-file-input" class="hidden" type="file" accept=".html,.htm,text/html">
+        </div>
+
+        <label for="game-code" class="muted" style="font-size:.82rem;font-weight:800;margin-bottom:7px;">Código HTML completo de la actividad</label>
+        <textarea id="game-code" class="code-area" spellcheck="false" placeholder="Pega aquí tu HTML o usa “Importar archivo HTML”"></textarea>
         <div class="meta-line">
           <span id="size-label">0 B</span>
           <span id="current-id">Actividad nueva</span>
@@ -68,20 +77,42 @@
         <div class="actions">
           <button id="validate-btn" class="btn ghost">Validar</button>
           <button id="preview-btn" class="btn ghost">Vista previa</button>
+          <button id="run-btn" class="btn ghost">▶ Ejecutar HTML</button>
           <button id="save-btn" class="btn primary" disabled>Guardar y publicar</button>
           <button id="new-btn" class="btn ghost">Nueva</button>
           <button id="copy-link-btn" class="btn success" disabled>Copiar enlace</button>
           <button id="copy-embed-btn" class="btn success" disabled>Copiar código de inserción</button>
         </div>
 
-        <div id="validation-report" class="status warn" style="margin-top:12px;">Pega un código y pulsa “Validar”.</div>
+        <div id="validation-report" class="status warn" style="margin-top:12px;">Pega o importa un HTML y pulsa “Validar”.</div>
       </section>
 
       <aside class="glass side-card">
         <div class="side-head">
           <h2>Mis actividades</h2>
-          <button id="refresh-btn" class="btn small ghost">Actualizar</button>
+          <div class="side-head-actions">
+            <button id="new-folder-btn" class="btn small primary">＋ Carpeta</button>
+            <button id="refresh-btn" class="btn small ghost">Actualizar</button>
+          </div>
         </div>
+
+        <div class="field library-search">
+          <input id="activity-search" class="input" placeholder="Buscar actividades…">
+        </div>
+
+        <div class="folder-section">
+          <div class="folder-section-title">CARPETAS</div>
+          <div id="folder-list" class="folder-list"></div>
+        </div>
+
+        <div class="activity-section-head">
+          <div>
+            <strong id="current-folder-name">Todas las actividades</strong>
+            <span id="activity-count" class="muted"></span>
+          </div>
+          <span id="reorder-hint" class="muted small-text"></span>
+        </div>
+
         <div id="activity-list" class="activity-list">
           <div class="status warn">Inicia sesión para cargar la biblioteca.</div>
         </div>
@@ -94,7 +125,28 @@
       <div class="modal-tools">
         <button id="close-preview" class="btn small danger">Cerrar</button>
       </div>
-      <iframe id="preview-frame" title="Vista previa" allow="fullscreen; autoplay" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-pointer-lock allow-downloads"></iframe>
+      <iframe id="preview-frame" title="Vista previa" allow="fullscreen; autoplay; clipboard-read; clipboard-write; camera; microphone; geolocation; gyroscope; accelerometer; gamepad" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <div id="move-modal" class="modal" aria-hidden="true">
+    <div class="dialog-panel">
+      <h2>Mover actividad</h2>
+      <p id="move-activity-name" class="muted"></p>
+      <label class="field">
+        <span>Carpeta de destino</span>
+        <select id="move-folder-select" class="select"></select>
+      </label>
+      <div class="dialog-divider"></div>
+      <label class="field">
+        <span>O crea una nueva carpeta</span>
+        <input id="move-new-folder-name" class="input" placeholder="Nombre de la nueva carpeta">
+      </label>
+      <div class="actions dialog-actions">
+        <button id="cancel-move-btn" class="btn ghost">Cancelar</button>
+        <button id="create-and-move-btn" class="btn ghost">＋ Crear y mover</button>
+        <button id="confirm-move-btn" class="btn primary">Mover</button>
+      </div>
     </div>
   </div>
 

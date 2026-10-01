@@ -9,6 +9,12 @@ export const firebaseConfig = {
   appId: "1:1036873237465:web:0c64ad1e7ab76ca3944fc8"
 };
 
+// Pega aquí la URL exacta que Firebase muestre al crear Realtime Database.
+// Ejemplos posibles:
+// https://powerview-web-rodrigo-default-rtdb.firebaseio.com
+// https://powerview-web-rodrigo-default-rtdb.europe-west1.firebasedatabase.app
+export const REALTIME_DATABASE_URL = "https://powerview-web-rodrigo-default-rtdb.firebaseio.com";
+
 export const ADMIN_EMAIL = "rodedugc@gmail.com";
 
 export function isFirebaseConfigured() {
@@ -17,5 +23,13 @@ export function isFirebaseConfigured() {
       typeof value === "string" &&
       value.trim() !== "" &&
       !value.includes("REEMPLAZAR")
+  );
+}
+
+export function isRealtimeConfigured() {
+  return (
+    typeof REALTIME_DATABASE_URL === "string" &&
+    REALTIME_DATABASE_URL.startsWith("https://") &&
+    !REALTIME_DATABASE_URL.includes("REEMPLAZAR")
   );
 }

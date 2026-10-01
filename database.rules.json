@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "htmlActivities": {
+      "$activityId": {
+        ".read": "(data.child('published').val() === true && data.child('ready').val() === true) || (auth != null && auth.token.email === 'rodedugc@gmail.com')",
+        ".write": "auth != null && auth.token.email === 'rodedugc@gmail.com'"
+      }
+    }
+  }
+}
